@@ -1,10 +1,10 @@
 package main
 
 import (
+	"cube/manager"
 	"cube/node"
 	"cube/task"
 	"cube/worker"
-	"cube/worker/manager"
 	"fmt"
 	"os"
 	"time"
@@ -84,7 +84,7 @@ func main(){
 
 
 func createContainer() (*task.Docker, *task.DockerResult) {
-	c := task.Config{
+	containerConfig := task.ContainerConfig{
 			Name:  "test-container-1",
 			Image: "postgres:13",
 			Env: []string{
@@ -93,25 +93,25 @@ func createContainer() (*task.Docker, *task.DockerResult) {
 			},
 	}
 
-	dc, _ := client.NewClientWithOpts(client.FromEnv)
-	d := task.Docker{
-			Client: dc,
-			Config: c,
+	dockerClient, _ := client.NewClientWithOpts(client.FromEnv)
+	docker := task.Docker{
+			Client: dockerClient,
+			Config: containerConfig,
 	}
 
-	result := d.Run()
+	result := docker.Run()
 	if result.Error != nil {
 			fmt.Printf("%v\n", result.Error)
 			return nil, nil
 	}
 
-	fmt.Printf("Container %s is running with config %v\n", result.ContainerId, c)
-	return &d, &result
+	fmt.Printf("Container %s is running with config %v\n", result.ContainerId, containerConfig)
+	return &docker, &result
 }
 
 
 func stopContainer(d *task.Docker, id string) *task.DockerResult {
-	result := d.Stop(id)
+	result := d.Stop(id,true)
 	if result.Error != nil {
 			fmt.Printf("%v\n", result.Error)
 			return nil
