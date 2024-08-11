@@ -19,16 +19,18 @@ import (
 
 type Task struct {
 	ID            uuid.UUID
+	ContainerID   string
 	Name          string
 	State         State
 	Image         string
-	Memory        int
-	Disk          int
+	Cpu           float64
+	Memory        int64
+	Disk          int64
 	ExposedPorts  nat.PortSet
 	PortBindings  map[string]string
 	RestartPolicy string
 	StartTime time.Time
-	FinishTyme time.Time
+	FinishTime time.Time
 }
 
 type TaskEvent struct {
@@ -38,36 +40,59 @@ type TaskEvent struct {
 	Task      Task
 }
 
-type State int
-
-const (
-	Pending State = iota
-	Scheduled
-	Running
-	Completed
-	Failed
-)
-
 
 type ContainerConfig struct {
-	Name          string
-	AttachStdin   bool
-	AttachStdout  bool
-	AttachStderr  bool
-	ExposedPorts  nat.PortSet
-	Cmd           []string
-	Image         string
-	Cpu           float64
-	Memory        int64
-	Disk          int64
-	Env           []string
-	RestartPolicy container.RestartPolicyMode
+	// Name of the task, also used as the container name
+	Name string
+	// AttachStdin boolean which determines if stdin should be attached
+	AttachStdin bool
+	// AttachStdout boolean which determines if stdout should be attached
+	AttachStdout bool
+	// AttachStderr boolean which determines if stderr should be attached
+	AttachStderr bool
+	// ExposedPorts list of ports exposed
+	ExposedPorts nat.PortSet
+	// Cmd to be run inside container (optional)
+	Cmd []string
+	// Image used to run the container
+	Image string
+	// Cpu
+	Cpu float64
+	// Memory in MiB
+	Memory int64
+	// Disk in GiB
+	Disk int64
+	// Env variables
+	Env []string
+
+	RestartPolicy string
 }
+
+func NewConfig(t*Task) *ContainerConfig {
+	return &ContainerConfig{
+		Name: t.Name,
+		ExposedPorts: t.ExposedPorts,
+		Image: t.Image,
+		Cpu: t.Cpu,
+		Memory: t.Memory,
+		Disk: t.Disk,
+		RestartPolicy: t.RestartPolicy,
+	}
+}
+
 
 
 type Docker struct {
 	Client *client.Client
 	Config   ContainerConfig
+}
+
+func NewDocker(c *ContainerConfig) *Docker {
+	dc, _ := client.NewClientWithOpts(client.FromEnv)
+	return &Docker{
+		Client: dc,
+		Config: *c,
+	}
 }
 
 type DockerResult struct {
@@ -88,7 +113,7 @@ func (docker *Docker) Run() DockerResult {
 	io.Copy(os.Stdout, reader)
 
 	restartPolicy := container.RestartPolicy{
-			Name: docker.Config.RestartPolicy,
+			Name: container.RestartPolicyMode(docker.Config.RestartPolicy),
 	}
 
 	resources := container.Resources{
