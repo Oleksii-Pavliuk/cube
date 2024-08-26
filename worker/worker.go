@@ -29,6 +29,14 @@ func (w *Worker) AddTask(t task.Task){
 	w.Queue.Enqueue(t)
 }
 
+func (w *Worker) GetTasks() []*task.Task{
+	tasks := []*task.Task{}
+	for _, task := range w.Db {
+		tasks = append(tasks, task)
+	}
+	return tasks
+}
+
 
 func (w *Worker) RunTask() task.DockerResult{
 	t := w.Queue.Dequeue()
