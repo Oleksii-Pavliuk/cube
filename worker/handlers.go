@@ -11,16 +11,16 @@ import (
 	"github.com/google/uuid"
 )
 
-func (a *Api) StartTaskHandler(req *http.Request, res http.ResponseWriter) {
+func (a *Api) StartTaskHandler(res http.ResponseWriter,req *http.Request) {
 	data := json.NewDecoder(req.Body)
 	data.DisallowUnknownFields()
 
 	taskEvent := task.TaskEvent{}
-	err := data.Decode(taskEvent)
+	err := data.Decode(&taskEvent)
 
 	if err != nil {
 		msg := fmt.Sprintf("Error matching the body: %v\n",err)
-		log.Printf(msg)
+		log.Print(msg)
 		res.WriteHeader(400)
 		e := ErrResponse{
 			HTTPStatusCode: 400,
@@ -36,14 +36,14 @@ func (a *Api) StartTaskHandler(req *http.Request, res http.ResponseWriter) {
 	json.NewEncoder(res).Encode(taskEvent.Task)
 }
 
-func (a *Api) GetTasksHandler(req *http.Request, res http.ResponseWriter) {
+func (a *Api) GetTasksHandler(res http.ResponseWriter,req *http.Request) {
 	res.Header().Set("Content-Type","application/json");
 	res.WriteHeader(200)
 	json.NewEncoder(res).Encode(a.Worker.GetTasks())
 }
 
-func (a *Api)StopTaskHandler(req *http.Request, res http.ResponseWriter) {
-	taskId := chi.URLParam(req,"taskID")
+func (a *Api)StopTaskHandler(res http.ResponseWriter,req *http.Request) {
+	taskId := chi.URLParam(req,"taskId")
 	if taskId == "" {
 		log.Printf("No taskID passed in request.\n")
 		res.WriteHeader(400)
@@ -56,10 +56,10 @@ func (a *Api)StopTaskHandler(req *http.Request, res http.ResponseWriter) {
 		res.WriteHeader(404)
 	}
 
-	taskCopy := taskToStop
+	taskCopy := *taskToStop
 	taskCopy.State = task.Completed
 
-	a.Worker.AddTask(*taskCopy)
+	a.Worker.AddTask(taskCopy)
 
 	log.Printf("Added task %v to stop container %v\n",taskToStop.ID,taskToStop.ContainerID);
 	res.WriteHeader(204)
