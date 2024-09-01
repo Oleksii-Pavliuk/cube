@@ -1,4 +1,9 @@
+### Get tasts
 GET http://localhost:5555/tasks HTTP/1.1
+
+
+### Get stats
+GET http://localhost:5555/stats HTTP/1.1
 
 
 ### Create task
