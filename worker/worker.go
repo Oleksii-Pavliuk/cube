@@ -43,8 +43,7 @@ func (w *Worker) GetTasks() []*task.Task{
 	return tasks
 }
 
-
-func (w *Worker) RunTask() task.DockerResult{
+func (w *Worker) runTask() task.DockerResult{
 	t := w.Queue.Dequeue()
 
 	if t == nil {
@@ -72,6 +71,21 @@ func (w *Worker) RunTask() task.DockerResult{
 		result.Error = fmt.Errorf("Invalid transition from %v to %v", taskPersisted.State, taskQueued.State)
 	}
 	return result
+}
+
+func (w *Worker) RunTasks() {
+	for {
+		if w.Queue.Len() != 0 {
+			result := w.runTask()
+			if result.Error != nil {
+				log.Printf("Error running task: %v\n",result.Error)
+			}
+		} else {
+			log.Println("No tasks to process currently")
+		}
+		log.Println("Sleeping for 10 seconds")
+		time.Sleep(10 * time.Second)
+	}
 }
 
 
