@@ -9,6 +9,7 @@ import (
 
 	"context"
 
+	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
@@ -29,8 +30,11 @@ type Task struct {
 	ExposedPorts  nat.PortSet
 	PortBindings  map[string]string
 	RestartPolicy string
-	StartTime time.Time
-	FinishTime time.Time
+	StartTime 		time.Time
+	FinishTime 		time.Time
+	HealthCheck   string
+	RestartCount  int
+	HostPorts			nat.PortMap
 }
 
 type TaskEvent struct {
@@ -85,6 +89,12 @@ func NewConfig(t*Task) *ContainerConfig {
 type Docker struct {
 	Client *client.Client
 	Config   ContainerConfig
+}
+
+
+type DockerInspectResponse struct{
+	Error     error
+	Container *types.ContainerJSON
 }
 
 func NewDocker(c *ContainerConfig) *Docker {
@@ -182,3 +192,16 @@ func (docker *Docker) Stop(id string,remove bool) DockerResult {
 
 	return DockerResult{Action: "stop", Result: "success", Error: nil}
 }
+
+func (d *Docker) Inspect(containerID string) DockerInspectResponse {
+	dc, _ := client.NewClientWithOpts(client.FromEnv)
+	ctx := context.Background()
+	resp, err := dc.ContainerInspect(ctx, containerID)
+	if err != nil {
+			log.Printf("Error inspecting container: %s\n", err)
+			return DockerInspectResponse{Error: err}
+	}
+
+	return DockerInspectResponse{Container: &resp}
+}
+

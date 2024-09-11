@@ -22,18 +22,17 @@ func main() {
 	mport, _ := strconv.Atoi(os.Getenv("CUBE_MANAGER_PORT"))
 
 
-
-
 	w := worker.Worker{
-			Queue: *queue.New(),
-			Db:    make(map[uuid.UUID]*task.Task),
-	}
+		Queue: *queue.New(),
+		Db:    make(map[uuid.UUID]*task.Task),
+}
 
 	wapi := worker.Api{Address: whost,Port: wport, Worker: &w}
 	fmt.Println("Starting Cube Worker")
 
 	go w.RunTasks()
-	// go w.CollectStats()
+ 	// go w.CollectStats()
+	 go w.UpdateTasks()
 	go wapi.Start()
 
 	workers := []string{fmt.Sprintf("%s:%d",whost,wport)}
@@ -42,7 +41,9 @@ func main() {
 
 	go m.ProcessTasks()
 	go m.UpdateTasks()
+	go m.DoHealthChecks()
 
 	mapi.Start()
 
 }
+
