@@ -161,7 +161,6 @@ func (w *Worker) updateTasks() {
 					log.Printf("Container for task %s in non-running state %s",id, resp.Container.State.Status)
 					w.Db[id].State = task.Failed
 				}
-
 				w.Db[id].HostPorts = resp.Container.NetworkSettings.NetworkSettingsBase.Ports
 		}
 }

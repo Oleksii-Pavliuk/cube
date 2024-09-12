@@ -221,6 +221,7 @@ func (m *Manager) DoHealthChecks() {
 
 
 func (m *Manager) doHealthChecks() {
+	m.updateTasks()
 	for _, t := range m.GetTasks() {
 			if t.State == task.Running && t.RestartCount < 3 {
 					err := m.checkTaskHealth(*t)
