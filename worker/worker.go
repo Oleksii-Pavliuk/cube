@@ -8,6 +8,7 @@ import (
 	"github.com/golang-collections/collections/queue"
 	"github.com/google/uuid"
 
+	"cube/stats"
 	"cube/task"
 )
 
@@ -16,13 +17,13 @@ type Worker struct {
     Queue     queue.Queue
     Db        map[uuid.UUID]*task.Task
     TaskCount int
-	Stats	  *Stats
+		Stats	  *stats.Stats
 }
 
 func (w *Worker ) CollectStats() {
 	for {
 		log.Printf("Collecting stats")
-		w.Stats = GetStats()
+		w.Stats = stats.GetStats()
 		w.Stats.TaskCount = w.TaskCount
 		time.Sleep(15 * time.Second)
 	}
@@ -81,9 +82,7 @@ func (w *Worker) RunTasks() {
 				log.Printf("Error running task: %v\n",result.Error)
 			}
 		} else {
-			log.Println("No tasks to process currently")
 		}
-		log.Println("Sleeping for 10 seconds")
 		time.Sleep(10 * time.Second)
 	}
 }
@@ -136,10 +135,7 @@ func (w *Worker) InspectTask(t task.Task) task.DockerInspectResponse {
 
 func (w *Worker) UpdateTasks() {
 	for {
-			log.Println("Checking status of tasks")
 			w.updateTasks()
-			log.Println("Task updates completed")
-			log.Println("Sleeping for 15 seconds")
 			time.Sleep(15 * time.Second)
 	}
 }
