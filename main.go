@@ -2,14 +2,10 @@ package main
 
 import (
 	"cube/manager"
-	"cube/task"
 	"cube/worker"
 	"fmt"
 	"os"
 	"strconv"
-
-	"github.com/golang-collections/collections/queue"
-	"github.com/google/uuid"
 )
 
 
@@ -22,25 +18,17 @@ func main() {
 	mport, _ := strconv.Atoi(os.Getenv("CUBE_MANAGER_PORT"))
 
 
-	w1 := worker.Worker{
-		Queue: *queue.New(),
-		Db:    make(map[uuid.UUID]*task.Task),
-	}
+	w1 := worker.New("worker-1", "persistent")
+	// w1 := worker.New("worker-1", "memory")
+	wapi1 := worker.Api{Address: whost, Port: wport, Worker: w1}
 
-	wapi1 := worker.Api{Address: whost, Port: wport, Worker: &w1}
+	w2 := worker.New("worker-2", "persistent")
+	// w2 := worker.New("worker-2", "memory")
+	wapi2 := worker.Api{Address: whost, Port: wport + 1, Worker: w2}
 
-	w2 := worker.Worker{
-		Queue: *queue.New(),
-		Db:    make(map[uuid.UUID]*task.Task),
-	}
-
-	wapi2 := worker.Api{Address: whost, Port: wport + 1, Worker: &w2}
-
-	w3 := worker.Worker{
-		Queue: *queue.New(),
-		Db:    make(map[uuid.UUID]*task.Task),
-	}
-	wapi3 := worker.Api{Address: whost, Port: wport + 2, Worker: &w3}
+	w3 := worker.New("worker-3", "persistent")
+	// w3 := worker.New("worker-3", "memory")
+	wapi3 := worker.Api{Address: whost, Port: wport + 2, Worker: w3}
 
 	go w1.RunTasks()
 	go w1.UpdateTasks()
@@ -62,7 +50,7 @@ func main() {
 		fmt.Sprintf("%s:%d", whost, wport+2),
 	}
 
-	m := manager.New(workers, "greedy")
+	m := manager.New(workers, "greedy","persistent")
 	mapi := manager.Api{Address: mhost, Port: mport, Manager: m}
 
 	go m.ProcessTasks()

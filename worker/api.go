@@ -26,6 +26,7 @@ func (a *Api) initRouter() {
 		router.Post("/",a.StartTaskHandler)
 		router.Get("/",a.GetTasksHandler)
 		router.Route("/{taskId}",func(router chi.Router) {
+			router.Get("/", a.InspectTaskHandler)
 			router.Delete("/", a.StopTaskHandler)
 		})
 	})

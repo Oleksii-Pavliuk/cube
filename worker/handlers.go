@@ -49,13 +49,13 @@ func (a *Api)StopTaskHandler(res http.ResponseWriter,req *http.Request) {
 		res.WriteHeader(400)
 	}
 
-	tID,_ := uuid.Parse(taskId)
-	taskToStop, ok := a.Worker.Db[tID];
-	if !ok {
-		log.Printf("No task with ID %v found\n",tID)
+	tID, _ := uuid.Parse(taskId)
+	result, err := a.Worker.Db.Get(tID.String())
+	if err != nil {
+		log.Printf("No task with ID %v found", tID)
 		res.WriteHeader(404)
 	}
-
+	taskToStop := result.(*task.Task)
 	taskCopy := *taskToStop
 	taskCopy.State = task.Completed
 
@@ -73,3 +73,26 @@ func (a *Api) GetStats(res http.ResponseWriter,req *http.Request) {
 	json.NewEncoder(res).Encode(a.Worker.Stats)
 }
 
+
+func (a *Api) InspectTaskHandler(w http.ResponseWriter, r *http.Request) {
+	taskID := chi.URLParam(r, "taskID")
+	if taskID == "" {
+		log.Printf("No taskID passed in request.\n")
+		w.WriteHeader(400)
+	}
+
+	tID, _ := uuid.Parse(taskID)
+	t, err := a.Worker.Db.Get(tID.String())
+	if err != nil {
+		log.Printf("No task with ID %v found", tID)
+		w.WriteHeader(404)
+		return
+	}
+
+	resp := a.Worker.InspectTask(t.(task.Task))
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(resp.Container)
+
+}
