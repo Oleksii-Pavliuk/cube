@@ -74,3 +74,9 @@ func (a *Api)StopTaskHandler(res http.ResponseWriter,req *http.Request) {
 	res.WriteHeader(204)
 
 }
+
+func (a *Api) GetNodesHandler(res http.ResponseWriter, req *http.Request){
+	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(200)
+	json.NewEncoder(res).Encode(a.Manager.WorkerNodes)
+}

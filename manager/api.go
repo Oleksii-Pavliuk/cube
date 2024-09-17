@@ -28,6 +28,9 @@ func (a *Api) initRouter() {
 		router.Route("/{taskId}",func(router chi.Router) {
 			router.Delete("/", a.StopTaskHandler)
 		})
+		a.Router.Route("/nodes", func(r chi.Router) {
+			r.Get("/", a.GetNodesHandler)
+		})
 	})
 }
 
@@ -35,3 +38,5 @@ func (a *Api) Start() {
 	a.initRouter()
 	http.ListenAndServe(fmt.Sprintf("%s:%d",a.Address,a.Port),a.Router)
 }
+
+
