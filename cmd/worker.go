@@ -5,8 +5,10 @@ package cmd
 
 import (
 	"cube/worker"
+	"fmt"
 	"log"
 
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -36,13 +38,9 @@ var workerCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(workerCmd)
 
-	// Here you will define your flags and configuration settings.
 
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// workerCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// workerCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	workerCmd.Flags().StringP("host", "H", "0.0.0.0","Hostname or IP address")
+	workerCmd.Flags().IntP("port", "p", 5556, "Port on which to listen")
+	workerCmd.Flags().StringP("name", "n", fmt.Sprintf("worker-%s", uuid.New().String()), "Name of the worker")
+  workerCmd.Flags().StringP("dbtype", "d", "memory", "Type of datastore to use for tasks (\"memory\" or \"persistent\")")
 }

@@ -43,6 +43,6 @@ func init() {
 	managerCmd.Flags().StringP("host", "H", "0.0.0.0","Hostname or IP address")
 	managerCmd.Flags().IntP("port", "p", 5555, "Port on which to listen")
 	managerCmd.Flags().StringSliceP("workers", "w",[]string{"localhost:5556"}, "List of workers on which the manager will schedule tasks.")
-	managerCmd.Flags().StringP("scheduler", "s", "epvm", "Name of scheduler to use.")
+	managerCmd.Flags().StringP("scheduler", "s", "greedy", "Name of scheduler to use.")
 	managerCmd.Flags().StringP("dbType", "d", "memory", "Type of datastore to use for events and tasks (\"memory\" or \"persistent\")")
 }
